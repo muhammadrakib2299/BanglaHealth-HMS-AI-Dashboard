@@ -2,8 +2,36 @@
 @tailwind components;
 @tailwind utilities;
 
-body {
-  @apply bg-gray-50 text-gray-900 antialiased;
+@layer base {
+  body {
+    @apply bg-gray-50 text-gray-900 antialiased;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-gray-300;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-400;
+  }
+
+  /* Better focus ring */
+  *:focus-visible {
+    @apply outline-none ring-2 ring-primary-500/30 ring-offset-1;
+  }
+}
+
+@layer utilities {
+  .animate-in {
+    animation: slide-in-from-right 0.3s ease-out;
+  }
 }
 
 @keyframes slide-in-from-right {
@@ -15,12 +43,4 @@ body {
     transform: translateX(0);
     opacity: 1;
   }
-}
-
-.animate-in {
-  animation: slide-in-from-right 0.3s ease-out;
-}
-
-.slide-in-from-right {
-  animation: slide-in-from-right 0.3s ease-out;
 }

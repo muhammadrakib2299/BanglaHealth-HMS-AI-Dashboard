@@ -33,12 +33,12 @@ export default function AuthenticatedLayout({
   return (
     <div className="min-h-screen">
       <Sidebar />
-      {/* Top bar for mobile */}
-      <header className="fixed left-0 right-0 top-0 z-20 flex h-14 items-center justify-end border-b border-gray-200 bg-white px-4 lg:left-64 lg:px-6">
+      {/* Top bar */}
+      <header className="fixed left-0 right-0 top-0 z-20 flex h-14 items-center justify-end border-b border-gray-100 bg-white/80 px-4 backdrop-blur-md lg:left-64 lg:px-6">
         <NotificationBell />
       </header>
       <main className="min-h-screen pt-14 lg:ml-64">
-        <div className="p-4 lg:p-6">{children}</div>
+        <div className="p-4 lg:p-8">{children}</div>
       </main>
     </div>
   );
