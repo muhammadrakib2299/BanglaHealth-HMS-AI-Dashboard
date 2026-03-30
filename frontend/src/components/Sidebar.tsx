@@ -9,8 +9,11 @@ import {
   Calendar,
   LogOut,
   Activity,
+  Menu,
+  X,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
+import { useState } from "react";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -21,13 +24,20 @@ const navItems = [
 export default function Sidebar() {
   const pathname = usePathname();
   const { user, logout } = useAuth();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
-  return (
-    <aside className="fixed left-0 top-0 z-40 flex h-screen w-64 flex-col border-r border-gray-200 bg-white">
+  const sidebarContent = (
+    <>
       {/* Logo */}
       <div className="flex h-16 items-center gap-2 border-b border-gray-200 px-6">
         <Activity className="h-7 w-7 text-primary-600" />
         <span className="text-lg font-bold text-gray-900">BanglaHealth</span>
+        <button
+          onClick={() => setMobileOpen(false)}
+          className="ml-auto lg:hidden"
+        >
+          <X className="h-5 w-5 text-gray-500" />
+        </button>
       </div>
 
       {/* Navigation */}
@@ -39,6 +49,7 @@ export default function Sidebar() {
             <Link
               key={item.href}
               href={item.href}
+              onClick={() => setMobileOpen(false)}
               className={clsx(
                 "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
                 active
@@ -67,6 +78,41 @@ export default function Sidebar() {
           Sign Out
         </button>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Mobile hamburger */}
+      <button
+        onClick={() => setMobileOpen(true)}
+        className="fixed left-4 top-4 z-30 rounded-lg bg-white p-2 shadow-md ring-1 ring-gray-200 lg:hidden"
+      >
+        <Menu className="h-5 w-5" />
+      </button>
+
+      {/* Mobile overlay */}
+      {mobileOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/30 lg:hidden"
+          onClick={() => setMobileOpen(false)}
+        />
+      )}
+
+      {/* Mobile sidebar */}
+      <aside
+        className={clsx(
+          "fixed left-0 top-0 z-50 flex h-screen w-64 flex-col border-r border-gray-200 bg-white transition-transform duration-200 lg:hidden",
+          mobileOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
+        {sidebarContent}
+      </aside>
+
+      {/* Desktop sidebar */}
+      <aside className="fixed left-0 top-0 z-40 hidden h-screen w-64 flex-col border-r border-gray-200 bg-white lg:flex">
+        {sidebarContent}
+      </aside>
+    </>
   );
 }

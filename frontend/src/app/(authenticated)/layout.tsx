@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import Sidebar from "@/components/Sidebar";
+import NotificationBell from "@/components/NotificationBell";
 
 export default function AuthenticatedLayout({
   children,
@@ -32,7 +33,13 @@ export default function AuthenticatedLayout({
   return (
     <div className="min-h-screen">
       <Sidebar />
-      <main className="ml-64 min-h-screen p-6">{children}</main>
+      {/* Top bar for mobile */}
+      <header className="fixed left-0 right-0 top-0 z-20 flex h-14 items-center justify-end border-b border-gray-200 bg-white px-4 lg:left-64 lg:px-6">
+        <NotificationBell />
+      </header>
+      <main className="min-h-screen pt-14 lg:ml-64">
+        <div className="p-4 lg:p-6">{children}</div>
+      </main>
     </div>
   );
 }

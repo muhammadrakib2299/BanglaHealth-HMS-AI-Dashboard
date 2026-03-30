@@ -2,12 +2,13 @@ import json
 import os
 import uuid
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile, status
 from sqlalchemy.orm import Session
 
 from database import get_db
 from middleware.audit import log_action
 from middleware.auth import get_current_user
+from middleware.rate_limit import ml_rate_limiter
 from models.patient import Patient
 from models.user import User
 from models.xray_result import XrayResult
@@ -23,10 +24,12 @@ MAX_FILE_SIZE = 10 * 1024 * 1024  # 10MB
 @router.post("/", response_model=XrayResponse, status_code=status.HTTP_201_CREATED)
 async def upload_xray(
     patient_id: int,
+    request: Request,
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    ml_rate_limiter.check(request)
     patient = db.query(Patient).filter(Patient.id == patient_id).first()
     if not patient:
         raise HTTPException(status_code=404, detail="Patient not found")
@@ -71,3 +74,21 @@ async def upload_xray(
                json.dumps({"patient_id": patient_id, "probability": result["pneumonia_probability"]}))
 
     return xray_result
+
+
+@router.get("/history", response_model=list[XrayResponse])
+def get_xray_history(
+    patient_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    patient = db.query(Patient).filter(Patient.id == patient_id).first()
+    if not patient:
+        raise HTTPException(status_code=404, detail="Patient not found")
+
+    return (
+        db.query(XrayResult)
+        .filter(XrayResult.patient_id == patient_id)
+        .order_by(XrayResult.uploaded_at.desc())
+        .all()
+    )

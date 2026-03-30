@@ -24,6 +24,7 @@ import {
 } from "recharts";
 import { useAuth } from "@/lib/auth";
 import { apiFetch } from "@/lib/api";
+import { StatCardSkeleton, ChartSkeleton } from "@/components/Skeleton";
 import type { DashboardStats } from "@/lib/types";
 
 const RISK_COLORS = { low: "#22c55e", medium: "#f59e0b", high: "#ef4444" };
@@ -57,7 +58,7 @@ function StatCard({
 export default function DashboardPage() {
   const { token } = useAuth();
 
-  const { data: stats } = useQuery({
+  const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ["dashboard-stats"],
     queryFn: () => apiFetch<DashboardStats>("/api/dashboard/stats", { token: token! }),
     enabled: !!token,
@@ -102,30 +103,36 @@ export default function DashboardPage() {
 
       {/* Stat Cards */}
       <div className="mb-8 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard
-          title="Total Patients"
-          value={stats?.total_patients ?? 0}
-          icon={Users}
-          color="bg-primary-600"
-        />
-        <StatCard
-          title="High Risk"
-          value={stats?.high_risk_count ?? 0}
-          icon={AlertTriangle}
-          color="bg-red-500"
-        />
-        <StatCard
-          title="Predictions Today"
-          value={stats?.predictions_today ?? 0}
-          icon={Activity}
-          color="bg-emerald-500"
-        />
-        <StatCard
-          title="Appointments Today"
-          value={stats?.appointments_today ?? 0}
-          icon={Calendar}
-          color="bg-amber-500"
-        />
+        {statsLoading ? (
+          Array.from({ length: 4 }).map((_, i) => <StatCardSkeleton key={i} />)
+        ) : (
+          <>
+            <StatCard
+              title="Total Patients"
+              value={stats?.total_patients ?? 0}
+              icon={Users}
+              color="bg-primary-600"
+            />
+            <StatCard
+              title="High Risk"
+              value={stats?.high_risk_count ?? 0}
+              icon={AlertTriangle}
+              color="bg-red-500"
+            />
+            <StatCard
+              title="Predictions Today"
+              value={stats?.predictions_today ?? 0}
+              icon={Activity}
+              color="bg-emerald-500"
+            />
+            <StatCard
+              title="Appointments Today"
+              value={stats?.appointments_today ?? 0}
+              icon={Calendar}
+              color="bg-amber-500"
+            />
+          </>
+        )}
       </div>
 
       {/* Charts */}

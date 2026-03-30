@@ -7,6 +7,7 @@ import { Search, Plus, ChevronLeft, ChevronRight } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { apiFetch } from "@/lib/api";
 import RiskBadge from "@/components/RiskBadge";
+import { TableRowSkeleton } from "@/components/Skeleton";
 import type { PatientList } from "@/lib/types";
 
 export default function PatientsPage() {
@@ -104,11 +105,9 @@ export default function PatientsPage() {
           </thead>
           <tbody className="divide-y divide-gray-200">
             {isLoading ? (
-              <tr>
-                <td colSpan={6} className="px-6 py-12 text-center text-gray-400">
-                  Loading...
-                </td>
-              </tr>
+              Array.from({ length: 8 }).map((_, i) => (
+                <TableRowSkeleton key={i} cols={6} />
+              ))
             ) : !filteredPatients?.length ? (
               <tr>
                 <td colSpan={6} className="px-6 py-12 text-center text-gray-400">

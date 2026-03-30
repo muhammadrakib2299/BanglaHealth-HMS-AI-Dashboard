@@ -1,11 +1,12 @@
 import json
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.orm import Session
 
 from database import get_db
 from middleware.audit import log_action
 from middleware.auth import get_current_user
+from middleware.rate_limit import ml_rate_limiter
 from models.patient import Patient
 from models.risk_prediction import RiskLevel, RiskPrediction
 from models.user import User
@@ -18,9 +19,11 @@ router = APIRouter(prefix="/api/patients/{patient_id}", tags=["Predictions"])
 @router.post("/predict", response_model=PredictionResponse, status_code=status.HTTP_201_CREATED)
 def run_prediction(
     patient_id: int,
+    request: Request,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    ml_rate_limiter.check(request)
     patient = db.query(Patient).filter(Patient.id == patient_id).first()
     if not patient:
         raise HTTPException(status_code=404, detail="Patient not found")
