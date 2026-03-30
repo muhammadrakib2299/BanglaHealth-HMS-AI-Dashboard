@@ -8,7 +8,7 @@ from sqlalchemy.exc import IntegrityError
 from config import settings
 from middleware.error_handler import global_exception_handler, integrity_error_handler
 from routers import auth, patients, vitals, predictions, appointments, xray, dashboard
-from routers import audit, alerts, doctors
+from routers import audit, alerts, doctors, reports
 
 app = FastAPI(
     title="BanglaHealth HMS API",
@@ -40,6 +40,7 @@ app.include_router(xray.router)
 app.include_router(audit.router)
 app.include_router(alerts.router)
 app.include_router(doctors.router)
+app.include_router(reports.router)
 
 # Serve uploaded files
 uploads_dir = os.path.join(os.path.dirname(__file__), "uploads")

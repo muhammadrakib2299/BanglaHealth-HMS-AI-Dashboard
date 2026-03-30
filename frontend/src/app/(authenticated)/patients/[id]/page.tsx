@@ -9,6 +9,7 @@ import {
   Brain,
   TrendingUp,
   Scan,
+  FileDown,
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -180,6 +181,37 @@ export default function PatientDetailPage() {
   const queryClient = useQueryClient();
   const [showVitalsForm, setShowVitalsForm] = useState(false);
   const [activeTab, setActiveTab] = useState<"prediction" | "xray">("prediction");
+  const [downloadingReport, setDownloadingReport] = useState(false);
+
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+
+  const handleDownloadReport = async () => {
+    if (!token) return;
+    setDownloadingReport(true);
+    try {
+      const res = await fetch(`${API_URL}/api/patients/${patientId}/report`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) {
+        const error = await res.json().catch(() => ({ detail: "Download failed" }));
+        throw new Error(error.detail || `HTTP ${res.status}`);
+      }
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `patient_${patientId}_report.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast("Report downloaded", "success");
+    } catch (err: any) {
+      toast(err.message || "Failed to download report", "error");
+    } finally {
+      setDownloadingReport(false);
+    }
+  };
 
   const { data: patient, isLoading: patientLoading } = useQuery({
     queryKey: ["patient", patientId],
@@ -241,6 +273,16 @@ export default function PatientDetailPage() {
             </>
           )}
         </div>
+        {patient && (
+          <button
+            onClick={handleDownloadReport}
+            disabled={downloadingReport}
+            className="flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 disabled:opacity-50"
+          >
+            <FileDown className="h-4 w-4" />
+            {downloadingReport ? "Generating..." : "Download Report"}
+          </button>
+        )}
         {patient && <RiskBadge level={patient.latest_risk_level} />}
       </div>
 
