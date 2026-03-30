@@ -6,7 +6,7 @@ import { Calendar, Check, X, Plus } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { apiFetch } from "@/lib/api";
 import { useToast } from "@/components/Toast";
-import type { Appointment } from "@/lib/types";
+import type { Appointment, Doctor, PatientList } from "@/lib/types";
 import { clsx } from "clsx";
 import { TableRowSkeleton } from "@/components/Skeleton";
 
@@ -26,6 +26,19 @@ function NewAppointmentForm({ onClose }: { onClose: () => void }) {
     appointment_date: "",
     appointment_time: "",
     notes: "",
+  });
+
+  const { data: doctors } = useQuery({
+    queryKey: ["doctors"],
+    queryFn: () => apiFetch<Doctor[]>("/api/doctors/", { token: token! }),
+    enabled: !!token,
+  });
+
+  const { data: patientData } = useQuery({
+    queryKey: ["patients-all"],
+    queryFn: () =>
+      apiFetch<PatientList>("/api/patients?per_page=500", { token: token! }),
+    enabled: !!token,
   });
 
   const mutation = useMutation({
@@ -61,29 +74,39 @@ function NewAppointmentForm({ onClose }: { onClose: () => void }) {
       >
         <div>
           <label className="mb-1 block text-sm font-medium text-gray-700">
-            Patient ID *
+            Patient *
           </label>
-          <input
-            type="number"
+          <select
             required
             value={form.patient_id}
             onChange={(e) => setForm({ ...form, patient_id: e.target.value })}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
-            placeholder="e.g. 1"
-          />
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+          >
+            <option value="">Select patient</option>
+            {patientData?.patients.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.full_name} (ID: {p.id})
+              </option>
+            ))}
+          </select>
         </div>
         <div>
           <label className="mb-1 block text-sm font-medium text-gray-700">
-            Doctor ID *
+            Doctor *
           </label>
-          <input
-            type="number"
+          <select
             required
             value={form.doctor_id}
             onChange={(e) => setForm({ ...form, doctor_id: e.target.value })}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
-            placeholder="e.g. 2"
-          />
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
+          >
+            <option value="">Select doctor</option>
+            {doctors?.map((d) => (
+              <option key={d.id} value={d.id}>
+                {d.full_name}
+              </option>
+            ))}
+          </select>
         </div>
         <div>
           <label className="mb-1 block text-sm font-medium text-gray-700">
@@ -96,7 +119,7 @@ function NewAppointmentForm({ onClose }: { onClose: () => void }) {
             onChange={(e) =>
               setForm({ ...form, appointment_date: e.target.value })
             }
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
           />
         </div>
         <div>
@@ -110,7 +133,7 @@ function NewAppointmentForm({ onClose }: { onClose: () => void }) {
             onChange={(e) =>
               setForm({ ...form, appointment_time: e.target.value })
             }
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
           />
         </div>
         <div className="sm:col-span-2">
@@ -121,7 +144,7 @@ function NewAppointmentForm({ onClose }: { onClose: () => void }) {
             type="text"
             value={form.notes}
             onChange={(e) => setForm({ ...form, notes: e.target.value })}
-            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none"
+            className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:border-primary-500 focus:outline-none focus:ring-2 focus:ring-primary-500/20"
             placeholder="Optional notes..."
           />
         </div>
@@ -158,6 +181,14 @@ export default function AppointmentsPage() {
       apiFetch<Appointment[]>("/api/appointments/", { token: token! }),
     enabled: !!token,
   });
+
+  const { data: doctors } = useQuery({
+    queryKey: ["doctors"],
+    queryFn: () => apiFetch<Doctor[]>("/api/doctors/", { token: token! }),
+    enabled: !!token,
+  });
+
+  const doctorMap = new Map(doctors?.map((d) => [d.id, d.full_name]) ?? []);
 
   const updateMutation = useMutation({
     mutationFn: ({ id, status }: { id: number; status: string }) =>
@@ -205,6 +236,9 @@ export default function AppointmentsPage() {
                 Patient ID
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500">
+                Doctor
+              </th>
+              <th className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500">
                 Status
               </th>
               <th className="px-6 py-3 text-left text-xs font-medium uppercase text-gray-500">
@@ -218,11 +252,11 @@ export default function AppointmentsPage() {
           <tbody className="divide-y divide-gray-200">
             {isLoading ? (
               Array.from({ length: 5 }).map((_, i) => (
-                <TableRowSkeleton key={i} cols={6} />
+                <TableRowSkeleton key={i} cols={7} />
               ))
             ) : !appointments?.length ? (
               <tr>
-                <td colSpan={6} className="px-6 py-12 text-center text-gray-400">
+                <td colSpan={7} className="px-6 py-12 text-center text-gray-400">
                   No appointments found
                 </td>
               </tr>
@@ -232,6 +266,9 @@ export default function AppointmentsPage() {
                   <td className="px-6 py-4 text-sm">{appt.appointment_date}</td>
                   <td className="px-6 py-4 text-sm">{appt.appointment_time}</td>
                   <td className="px-6 py-4 text-sm">#{appt.patient_id}</td>
+                  <td className="px-6 py-4 text-sm text-gray-700">
+                    {doctorMap.get(appt.doctor_id) ?? `Doctor #${appt.doctor_id}`}
+                  </td>
                   <td className="px-6 py-4">
                     <span
                       className={clsx(

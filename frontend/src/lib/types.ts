@@ -55,6 +55,15 @@ export interface Appointment {
   created_at: string;
 }
 
+export interface Doctor {
+  id: number;
+  email: string;
+  full_name: string;
+  role: string;
+  is_active: boolean;
+  created_at: string;
+}
+
 export interface DashboardStats {
   total_patients: number;
   high_risk_count: number;

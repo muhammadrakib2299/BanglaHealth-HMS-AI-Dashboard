@@ -12,6 +12,7 @@ import {
   Menu,
   X,
   Shield,
+  Stethoscope,
 } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { useState } from "react";
@@ -19,6 +20,7 @@ import { useState } from "react";
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/patients", label: "Patients", icon: Users },
+  { href: "/doctors", label: "Doctors", icon: Stethoscope },
   { href: "/appointments", label: "Appointments", icon: Calendar },
 ];
 
