@@ -1,0 +1,54 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.egg-info/
+dist/
+build/
+*.egg
+.venv/
+venv/
+env/
+
+# Environment variables
+.env
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node
+node_modules/
+.next/
+out/
+frontend/.next/
+frontend/node_modules/
+
+# ML model files (track via Git LFS or download script)
+backend/ml/*.pkl
+backend/ml/*.pth
+backend/ml/*.pt
+!backend/ml/.gitkeep
+
+# Uploads
+backend/uploads/
+backend/static/uploads/
+
+# Test / Coverage
+.coverage
+htmlcov/
+.pytest_cache/
+coverage/
+
+# Docker
+*.log
+
+# Alembic
+backend/alembic/versions/__pycache__/
