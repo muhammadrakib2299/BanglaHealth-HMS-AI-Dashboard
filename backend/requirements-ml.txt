@@ -1,0 +1,9 @@
+# ML dependencies — install when model files are ready
+# pip install -r requirements-ml.txt
+-r requirements.txt
+xgboost>=2.1.0
+shap>=0.46.0
+scikit-learn>=1.5.0
+pandas>=2.2.0
+torch>=2.0.0
+torchvision>=0.15.0
